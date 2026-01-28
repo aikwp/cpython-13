@@ -1,7 +1,7 @@
 This is Python version 3.13.11
 ==============================
 
-.. image:: https://github.com/python/cpython/workflows/Tests/badge.svg
+.. image:: https://github.com/aikwp/cpython-13/workflows/Tests/badge.svg
    :alt: CPython build status on GitHub Actions
    :target: https://github.com/python/cpython/actions
 
@@ -24,8 +24,8 @@ General Information
 -------------------
 
 - Website: https://www.python.org
-- Source code: https://github.com/python/cpython
-- Issue tracker: https://github.com/python/cpython/issues
+- Source code: https://github.com/aikwp/cpython-13
+- Issue tracker: https://github.com/aikwp/cpython-13/issues
 - Documentation: https://docs.python.org
 - Developer's Guide: https://devguide.python.org/
 
@@ -74,10 +74,10 @@ to macOS framework and universal builds.  Refer to `Mac/README.rst
 <https://github.com/python/cpython/blob/main/Mac/README.rst>`_.
 
 On Windows, see `PCbuild/readme.txt
-<https://github.com/python/cpython/blob/main/PCbuild/readme.txt>`_.
+<https://github.com/aikwp/cpython-14/blob/main/PCbuild/readme.txt>`_.
 
 To build Windows installer, see `Tools/msi/README.txt
-<https://github.com/python/cpython/blob/main/Tools/msi/README.txt>`_.
+<https://github.com/aikwp/cpython-13/blob/main/Tools/msi/README.txt>`_.
 
 If you wish, you can create a subdirectory and invoke configure from there.
 For example::
@@ -138,9 +138,9 @@ What's New
 We have a comprehensive overview of the changes in the `What's New in Python
 3.13 <https://docs.python.org/3.13/whatsnew/3.13.html>`_ document.  For a more
 detailed change log, read `Misc/NEWS
-<https://github.com/python/cpython/tree/main/Misc/NEWS.d>`_, but a full
+<https://github.com/aikwp/cpython-13/tree/main/Misc/NEWS.d>`_, but a full
 accounting of changes can only be gleaned from the `commit history
-<https://github.com/python/cpython/commits/main>`_.
+<https://github.com/aikwp/cpython-13/commits/main>`_.
 
 If you want to install multiple versions of Python, see the section below
 entitled "Installing multiple versions".
@@ -158,7 +158,7 @@ is primarily for documentation authors, translators, and people with special
 formatting requirements.
 
 For information about building Python's documentation, refer to `Doc/README.rst
-<https://github.com/python/cpython/blob/main/Doc/README.rst>`_.
+<https://github.com/aikwp/cpython-13/blob/main/Doc/README.rst>`_.
 
 
 Testing
