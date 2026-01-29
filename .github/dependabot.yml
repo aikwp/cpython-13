@@ -4,9 +4,14 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 5
     labels:
       - "skip issue"
       - "skip news"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
     ignore:
       - dependency-name: "*"
         update-types:
@@ -16,6 +21,11 @@ updates:
     directory: "/Tools/"
     schedule:
       interval: "weekly"
+    open-pull-requests-limit: 5
     labels:
       - "skip issue"
       - "skip news"
+    groups:
+      python-dependencies:
+        patterns:
+          - "*"
