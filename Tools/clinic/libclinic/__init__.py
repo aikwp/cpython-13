@@ -23,6 +23,7 @@ from .identifiers import (
     is_legal_c_identifier,
     is_legal_py_identifier,
 )
+from . import cpp
 from .utils import (
     FormatCounterFormatter,
     NULL,
@@ -42,6 +43,7 @@ __all__ = [
     "ClinicError",
     "warn",
     "fail",
+    "cpp",
 
     # Formatting helpers
     "SIG_END_MARKER",
