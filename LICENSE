@@ -1,3 +1,99 @@
+============================================================
+CPYTHON-13 PROJECT LICENSE
+============================================================
+
+This repository is a modified and/or redistributed version of the
+Python programming language (CPython) and related tooling.
+
+============================================================
+PART 1 — LICENSE FOR CPYTHON-13 PROJECT MODIFICATIONS
+============================================================
+
+Copyright (c) 2026 aikwp Organization
+All rights reserved.
+
+Maintainers:
+- Alex (plfj)
+- George (Aasyaco)
+- AHMAD (Ansyso)
+- George (George-Codr)
+
+This license applies ONLY to the original modifications, patches, build
+scripts, tooling, configuration, integrations, and any other code or assets
+created specifically for the CPYTHON-13 project (the "Project Additions").
+
+This project includes and/or is based on the Python programming language.
+Python itself is licensed under the Python Software Foundation License
+Version 2 (PSF License v2), which is included in full below in this same file.
+
+This project is NOT affiliated with, endorsed by, or sponsored by the
+Python Software Foundation.
+
+------------------------------------------------------------
+GRANT OF LICENSE
+------------------------------------------------------------
+
+Permission is granted to any person obtaining a copy of this repository to:
+
+- Use the Project Additions for personal, educational, research, or internal
+  evaluation purposes only
+- Compile and run the software
+- Study and inspect the source code
+
+------------------------------------------------------------
+RESTRICTIONS
+------------------------------------------------------------
+
+Without explicit prior written permission from the aikwp Organization, you may NOT:
+
+1. Sell, rent, lease, or commercially exploit the Project Additions
+2. Redistribute the Project Additions in source or binary form
+3. Publish, repackage, mirror, or host the Project Additions
+4. Distribute modified versions of the Project Additions
+5. Create or distribute forks containing the Project Additions
+6. Sublicense or relicense the Project Additions
+7. Remove or alter copyright or attribution notices
+8. Use the Project Additions as part of a paid product, service, or offering
+9. Use the Project Additions in a commercial environment or for commercial gain
+10. Claim authorship or ownership of the Project Additions
+
+------------------------------------------------------------
+OWNERSHIP
+------------------------------------------------------------
+
+All rights, title, and interest in the Project Additions remain the exclusive
+property of the aikwp Organization.
+
+------------------------------------------------------------
+TERMINATION
+------------------------------------------------------------
+
+This license automatically terminates immediately if any of the above
+restrictions are violated.
+
+Upon termination, you must immediately stop using and destroy all copies
+of the Project Additions in your possession or control.
+
+------------------------------------------------------------
+DISCLAIMER
+------------------------------------------------------------
+
+THE PROJECT ADDITIONS ARE PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.
+
+IN NO EVENT SHALL THE AIKWP ORGANIZATION OR ITS MAINTAINERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE PROJECT ADDITIONS
+OR THE USE OR OTHER DEALINGS IN THE PROJECT ADDITIONS.
+
+============================================================
+PART 2 — PYTHON SOFTWARE FOUNDATION LICENSE (FULL, UNMODIFIED)
+============================================================
+
+Python is Copyright (c) 2001-2024 Python Software Foundation.
+All rights reserved.
+
 A. HISTORY OF THE SOFTWARE
 ==========================
 
@@ -275,3 +371,8 @@ INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
 LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
 OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
 PERFORMANCE OF THIS SOFTWARE.
+
+
+============================================================
+END OF LICENSE
+============================================================
