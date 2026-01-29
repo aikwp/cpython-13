@@ -11,6 +11,7 @@ import signal
 import subprocess
 import sys
 import sysconfig
+import threading
 import tempfile
 import textwrap
 from collections.abc import Callable, Iterable
@@ -151,7 +152,7 @@ def setup_unraisable_hook() -> None:
     sys.unraisablehook = regrtest_unraisable_hook
 
 
-orig_threading_excepthook: Callable[..., None] | None = None
+orig_threading_excepthook: Callable[[threading.ExceptHookArgs], object] | None = None
 
 
 def regrtest_threading_excepthook(args) -> None:
