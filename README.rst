@@ -3,7 +3,7 @@ This is Python version 3.13.11
 
 .. image:: https://github.com/aikwp/cpython-13/workflows/Tests/badge.svg
    :alt: CPython build status on GitHub Actions
-   :target: https://github.com/python/cpython/actions
+   :target: https://github.com/aikwp/cpython-13/actions
 
 .. image:: https://dev.azure.com/python/cpython/_apis/build/status/Azure%20Pipelines%20CI?branchName=main
    :alt: CPython build status on Azure DevOps
@@ -71,10 +71,10 @@ dependencies for various Linux distributions and macOS.
 
 On macOS, there are additional configure and build options related
 to macOS framework and universal builds.  Refer to `Mac/README.rst
-<https://github.com/python/cpython/blob/main/Mac/README.rst>`_.
+<https://github.com/aikwp/cpython-13/blob/main/Mac/README.rst>`_.
 
 On Windows, see `PCbuild/readme.txt
-<https://github.com/aikwp/cpython-14/blob/main/PCbuild/readme.txt>`_.
+<https://github.com/aikwp/cpython-13/blob/main/PCbuild/readme.txt>`_.
 
 To build Windows installer, see `Tools/msi/README.txt
 <https://github.com/aikwp/cpython-13/blob/main/Tools/msi/README.txt>`_.
