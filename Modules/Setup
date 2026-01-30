@@ -178,8 +178,8 @@ _blake3 _blake3module.c \
         _blake3/blake3_sse41.c \
         _blake3/blake3_avx2.c \
         _blake3/blake3_avx512.c \
-        _blake3/blake3_neon.c
-
+        _blake3/blake3_neon.c \
+        -I$(srcdir)/Modules/_blake3
 # text encodings and unicode
 #_codecs_cn cjkcodecs/_codecs_cn.c
 #_codecs_hk cjkcodecs/_codecs_hk.c
