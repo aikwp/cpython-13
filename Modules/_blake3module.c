@@ -212,17 +212,22 @@ blake3_derive_key(PyObject *module, PyObject *args, PyObject *kwds)
         goto cleanup;
     }
 
+    if (ctx.len == 0 || ctx.buf == NULL) {
+        PyErr_SetString(PyExc_ValueError, "context must be non-empty bytes");
+        goto cleanup;
+    }
+
     PyObject *result = PyBytes_FromStringAndSize(NULL, length);
     if (!result)
         goto cleanup;
 
     blake3_hasher hasher;
-    blake3_hasher_init_derive_key(&hasher,
-                                  (const uint8_t *)ctx.buf, (size_t)ctx.len);
-    blake3_hasher_update(&hasher, key_mat.buf, (size_t)key_mat.len);
+    blake3_hasher_init_derive_key(&hasher, PyBytes_AS_STRING(ctx));
+    blake3_hasher_update(&hasher, (const uint8_t *)key_mat.buf, (size_t)key_mat.len);
     blake3_hasher_finalize_seek(&hasher, 0,
                                 (uint8_t *)PyBytes_AS_STRING(result),
                                 (size_t)length);
+
 
 cleanup:
     if (key_mat.obj) PyBuffer_Release(&key_mat);
