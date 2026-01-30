@@ -170,10 +170,6 @@ PYTHONPATH=$(COREPYTHONPATH)
 #_sha1 sha1module.c -I$(srcdir)/Modules/_hacl/include _hacl/Hacl_Hash_SHA1.c -D_BSD_SOURCE -D_DEFAULT_SOURCE
 #_sha2 sha2module.c -I$(srcdir)/Modules/_hacl/include Modules/_hacl/libHacl_Hash_SHA2.a
 #_sha3 sha3module.c -I$(srcdir)/Modules/_hacl/include _hacl/Hacl_Hash_SHA3.c -D_BSD_SOURCE -D_DEFAULT_SOURCE
-Modules/_blake3/.dirstamp:
-	mkdir -p Modules/_blake3
-	touch Modules/_blake3/.dirstamp
-
 _blake3 _blake3module.c \
         _blake3/blake3.c \
         _blake3/blake3_dispatch.c \
@@ -184,10 +180,7 @@ _blake3 _blake3module.c \
         _blake3/blake3_avx512.c \
         _blake3/blake3_neon.c \
         -I$(srcdir)/Modules/_blake3
-<<<<<<< HEAD
-=======
 
->>>>>>> 54f5310 (Fix build and compilation issues in native BLAKE3 module)
 # text encodings and unicode
 #_codecs_cn cjkcodecs/_codecs_cn.c
 #_codecs_hk cjkcodecs/_codecs_hk.c
