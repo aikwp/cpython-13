@@ -196,6 +196,7 @@ static PyTypeObject Blake3_Type = {
 };
 
 /* Module-level derive_key (KDF-style) */
+
 static PyObject *
 blake3_derive_key(PyObject *module, PyObject *args, PyObject *kwds)
 {
@@ -222,16 +223,21 @@ blake3_derive_key(PyObject *module, PyObject *args, PyObject *kwds)
         goto cleanup;
 
     blake3_hasher hasher;
-    blake3_hasher_init_derive_key(&hasher, PyBytes_AS_STRING(ctx));
-    blake3_hasher_update(&hasher, (const uint8_t *)key_mat.buf, (size_t)key_mat.len);
+
+    // Correct: use ctx.buf directly (cast to const char*)
+    blake3_hasher_init_derive_key(&hasher, (const char *)ctx.buf);
+
+    blake3_hasher_update(&hasher,
+                         (const uint8_t *)key_mat.buf,
+                         (size_t)key_mat.len);
+
     blake3_hasher_finalize_seek(&hasher, 0,
                                 (uint8_t *)PyBytes_AS_STRING(result),
                                 (size_t)length);
 
-
 cleanup:
     if (key_mat.obj) PyBuffer_Release(&key_mat);
-    if (ctx.obj) PyBuffer_Release(&ctx);
+    if (ctx.obj)    PyBuffer_Release(&ctx);
     return result;
 }
 
