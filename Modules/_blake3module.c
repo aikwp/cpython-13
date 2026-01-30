@@ -112,11 +112,47 @@ Blake3_digest(Blake3Object *self, PyObject *args, PyObject *kwds)
 static PyObject *
 Blake3_hexdigest(Blake3Object *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *digest = Blake3_digest(self, args, kwds);
-    if (!digest)
+    static char *kwlist[] = {"length", NULL};
+    Py_ssize_t length = self->digest_size;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|n:hexdigest", kwlist, &length)) {
         return NULL;
-    PyObject *hex = _Py_strhex_bytes((const unsigned char *)PyBytes_AS_STRING(digest),
-                                     PyBytes_GET_SIZE(digest));
+    }
+
+    if (length <= 0) {
+        PyErr_SetString(PyExc_ValueError, "length must be positive");
+        return NULL;
+    }
+
+    PyObject *digest = Blake3_digest(self, args, kwds);
+    if (digest == NULL) {
+        return NULL;
+    }
+
+    Py_ssize_t digest_len = PyBytes_GET_SIZE(digest);
+    const unsigned char *bytes = (const unsigned char *)PyBytes_AS_STRING(digest);
+
+    /* We'll build the hex string incrementally */
+    PyObject *hex = PyUnicode_New(digest_len * 2, 127);  /* ASCII range */
+    if (hex == NULL) {
+        Py_DECREF(digest);
+        return NULL;
+    }
+
+    Py_ssize_t pos = 0;
+    for (Py_ssize_t i = 0; i < digest_len; i++) {
+        char buf[3];
+        snprintf(buf, sizeof(buf), "%02x", bytes[i]);
+
+        /* Append two characters */
+        if (PyUnicode_WriteChar(hex, pos++, (Py_UCS4)buf[0]) < 0 ||
+            PyUnicode_WriteChar(hex, pos++, (Py_UCS4)buf[1]) < 0) {
+            Py_DECREF(hex);
+            Py_DECREF(digest);
+            return NULL;
+        }
+    }
+
     Py_DECREF(digest);
     return hex;
 }
