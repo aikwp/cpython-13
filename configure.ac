@@ -7096,6 +7096,7 @@ for dir in $SRCDIRS; do
     fi
 done
 AC_MSG_RESULT([done])
+mkdir -p Modules/_blake3
 
 # Availability of -O2:
 AC_CACHE_CHECK([for -O2], [ac_cv_compile_o2], [
@@ -7466,7 +7467,7 @@ AC_MSG_CHECKING([for --with-builtin-hashlib-hashes])
 AC_ARG_WITH(
   [builtin-hashlib-hashes],
   [AS_HELP_STRING(
-    [--with-builtin-hashlib-hashes=md5,sha1,sha2,sha3,blake2,blake3],
+    [--with-builtin-hashlib-hashes=md5,sha1,sha2,sha3,blake2],
     [builtin hash modules, md5, sha1, sha2, sha3 (with shake), blake2]
   )],
 [
