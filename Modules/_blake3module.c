@@ -236,37 +236,6 @@ Blake3_repr(Blake3Object *self)
 }
 
 /* ------------------------------------------------------------------------- */
-/* Methods table */
-/* ------------------------------------------------------------------------- */
-
-static PyMethodDef Blake3_methods[] = {
-    {"update",    (PyCFunction)Blake3_update,
-                  METH_O, NULL},
-    {"digest",    (PyCFunction)Blake3_digest,
-                  METH_VARARGS|METH_KEYWORDS, NULL},
-    {"hexdigest", (PyCFunction)Blake3_hexdigest,
-                  METH_VARARGS|METH_KEYWORDS, NULL},
-    {"copy",      (PyCFunction)Blake3_copy,
-                  METH_NOARGS, NULL},
-    {NULL}
-};
-
-PyDoc_STRVAR(Blake3_doc,
-"BLAKE3 hash object (native implementation)");
-
-static PyTypeObject Blake3_Type = {
-    PyVarObject_HEAD_INIT(NULL, 0)
-    .tp_name      = "_blake3.BLAKE3",
-    .tp_doc       = Blake3_doc,
-    .tp_basicsize = sizeof(Blake3Object),
-    .tp_flags     = Py_TPFLAGS_DEFAULT,
-    .tp_dealloc   = (destructor)Blake3_dealloc,
-    .tp_methods   = Blake3_methods,
-    .tp_new       = blake3_new,
-    .tp_repr      = (reprfunc)Blake3_repr,
-};
-
-/* ------------------------------------------------------------------------- */
 /* derive_key() */
 /* ------------------------------------------------------------------------- */
 
@@ -323,18 +292,34 @@ cleanup:
 }
 
 /* ------------------------------------------------------------------------- */
-/* Module setup */
+/* Method tables */
 /* ------------------------------------------------------------------------- */
 
-static PyMethodDef _blake3_methods[] = {
-    {"blake3",     (PyCFunction)blake3_new,
-                   METH_VARARGS|METH_KEYWORDS,
-                   "blake3(data=b'', *, digest_size=32, key=None, usedforsecurity=False) -> BLAKE3"},
-    {"derive_key", (PyCFunction)blake3_derive_key,
-                   METH_VARARGS|METH_KEYWORDS,
-                   "derive_key(key_material, context, length=32) -> key bytes"},
+static PyMethodDef Blake3_methods[] = {
+    {"update",    (PyCFunction)Blake3_update, 
+                  METH_O, NULL},
+    {"digest",    (PyCFunctionWithKeywords)Blake3_digest, 
+                  METH_VARARGS | METH_KEYWORDS, NULL},
+    {"hexdigest", (PyCFunctionWithKeywords)Blake3_hexdigest, 
+                  METH_VARARGS | METH_KEYWORDS, NULL},
+    {"copy",      (PyCFunction)Blake3_copy, 
+                  METH_NOARGS, NULL},
     {NULL}
 };
+
+static PyMethodDef _blake3_methods[] = {
+    {"blake3",     (PyCFunctionWithKeywords)blake3_new,
+                   METH_VARARGS | METH_KEYWORDS,
+                   "blake3(data=b'', *, digest_size=32, key=None, usedforsecurity=False) -> BLAKE3 object"},
+    {"derive_key", (PyCFunctionWithKeywords)blake3_derive_key,
+                   METH_VARARGS | METH_KEYWORDS,
+                   "derive_key(key_material, context, length=32) -> derived key bytes"},
+    {NULL}
+};
+
+/* ------------------------------------------------------------------------- */
+/* Module definition */
+/* ------------------------------------------------------------------------- */
 
 static struct PyModuleDef _blake3module = {
     PyModuleDef_HEAD_INIT,
@@ -343,6 +328,10 @@ static struct PyModuleDef _blake3module = {
     .m_size    = -1,
     .m_methods = _blake3_methods,
 };
+
+/* ------------------------------------------------------------------------- */
+/* Module init */
+/* ------------------------------------------------------------------------- */
 
 PyMODINIT_FUNC
 PyInit__blake3(void)
