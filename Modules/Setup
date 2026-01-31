@@ -177,7 +177,7 @@ _blake3 _blake3module.c \
         _blake3/blake3_sse2.c \
         _blake3/blake3_sse41.c \
         _blake3/blake3_avx2.c \
-        -I$(srcdir)/Modules/_blake3
+        -I$(srcdir)/Modules/_blake3 -march=native
 
 # text encodings and unicode
 #_codecs_cn cjkcodecs/_codecs_cn.c
