@@ -170,15 +170,24 @@ PYTHONPATH=$(COREPYTHONPATH)
 #_sha1 sha1module.c -I$(srcdir)/Modules/_hacl/include _hacl/Hacl_Hash_SHA1.c -D_BSD_SOURCE -D_DEFAULT_SOURCE
 #_sha2 sha2module.c -I$(srcdir)/Modules/_hacl/include Modules/_hacl/libHacl_Hash_SHA2.a
 #_sha3 sha3module.c -I$(srcdir)/Modules/_hacl/include _hacl/Hacl_Hash_SHA3.c -D_BSD_SOURCE -D_DEFAULT_SOURCE
-_blake3 _blake3module.c \
-        _blake3/blake3.c \
-        _blake3/blake3_dispatch.c \
-        _blake3/blake3_portable.c \
-        _blake3/blake3_sse2.c \
-        _blake3/blake3_sse41.c \
-        _blake3/blake3_avx2.c \
-        _blake3/blake3_avx512.c \
-        _blake3/blake3_neon.c \
+_blake3_common = \
+    _blake3/blake3.o \
+    _blake3/blake3_dispatch.o \
+    _blake3/blake3_portable.o \
+    _blake3/blake3_sse2.o \
+    _blake3/blake3_sse41.o \
+    _blake3/blake3_avx2.o \
+    _blake3/blake3_avx512.o
+ifeq ($(MACHDEP),arm)
+    _blake3_neon = _blake3/blake3_neon.o
+else ifeq ($(MACHDEP),aarch64)
+    _blake3_neon = _blake3/blake3_neon.o
+else
+    _blake3_neon =
+endif
+
+_blake3 Modules/_blake3/_blake3module.o \
+        $(_blake3_common) $(_blake3_neon) \
         -I$(srcdir)/Modules/_blake3
 
 # text encodings and unicode
