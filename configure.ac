@@ -7461,13 +7461,13 @@ AC_DEFINE([PY_SSL_DEFAULT_CIPHERS], [1])
 ])
 
 # builtin hash modules
-default_hashlib_hashes="md5,sha1,sha2,sha3,blake2,blake3"
+default_hashlib_hashes="md5,sha1,sha2,sha3,blake2"
 AC_MSG_CHECKING([for --with-builtin-hashlib-hashes])
 AC_ARG_WITH(
   [builtin-hashlib-hashes],
   [AS_HELP_STRING(
     [--with-builtin-hashlib-hashes=md5,sha1,sha2,sha3,blake2,blake3],
-    [builtin hash modules, md5, sha1, sha2, sha3 (with shake), blake2, blake3]
+    [builtin hash modules, md5, sha1, sha2, sha3 (with shake), blake2]
   )],
 [
   AS_CASE([$with_builtin_hashlib_hashes],
@@ -7490,7 +7490,6 @@ for builtin_hash in $with_builtin_hashlib_hashes; do
       [sha2], [with_builtin_sha2=yes],
       [sha3], [with_builtin_sha3=yes],
       [blake2], [with_builtin_blake2=yes]
-      [blake3], [with_builtin_blake3=yes]
     )
 done
 IFS=$as_save_IFS
