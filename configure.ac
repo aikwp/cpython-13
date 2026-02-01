@@ -7090,13 +7090,13 @@ SRCDIRS="\
   Python \
   Python/frozen_modules"
 AC_MSG_CHECKING([for build directories])
+mkdir -p Modules/_blake3
 for dir in $SRCDIRS; do
     if test ! -d $dir; then
         mkdir $dir
     fi
 done
 AC_MSG_RESULT([done])
-mkdir -p Modules/_blake3
 
 # Availability of -O2:
 AC_CACHE_CHECK([for -O2], [ac_cv_compile_o2], [
