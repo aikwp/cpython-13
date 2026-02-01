@@ -785,6 +785,13 @@ if test "$cross_compiling" = yes; then
 	_PYTHON_HOST_PLATFORM="$MACHDEP${_host_ident:+-$_host_ident}"
 fi
 
+AC_ARG_ENABLE([builtin-blake3],
+  [AS_HELP_STRING([--enable-builtin-blake3],
+                  [Build _blake3 module (default=yes)])],
+  [with_builtin_blake3=$enableval],
+  [with_builtin_blake3=yes])
+
+
 # Some systems cannot stand _XOPEN_SOURCE being defined at all; they
 # disable features if it is defined, without any means to access these
 # features as extensions. For these systems, we skip the definition of
@@ -7841,7 +7848,6 @@ PY_STDLIB_MOD([_blake2],
   [$LIBB2_CFLAGS], [$LIBB2_LIBS])
 PY_STDLIB_MOD([_blake3],
   [test "$with_builtin_hashlib" = yes], [], [], [])
-
 PY_STDLIB_MOD([_ctypes],
   [], [test "$have_libffi" = yes],
   [$NO_STRICT_OVERFLOW_CFLAGS $LIBFFI_CFLAGS], [$LIBFFI_LIBS])
