@@ -5,9 +5,9 @@ This is Python version 3.13.11
    :alt: CPython build status on GitHub Actions
    :target: https://github.com/aikwp/cpython-13/actions
 
-.. image:: https://dev.azure.com/python/cpython/_apis/build/status/Azure%20Pipelines%20CI?branchName=main
+.. image:: https://dev.azure.com/MichaelixNe/Neuro/_apis/build/status%2Faikwp.cpython-13?branchName=main
    :alt: CPython build status on Azure DevOps
-   :target: https://dev.azure.com/python/cpython/_build/latest?definitionId=4&branchName=main
+   :target: https://dev.azure.com/MichaelixNe/Neuro/_apis/build/status%2Faikwp.cpython-13?branchName=main
 
 .. image:: https://img.shields.io/badge/discourse-join_chat-brightgreen.svg
    :alt: Python Discourse chat
