@@ -7843,8 +7843,21 @@ PY_STDLIB_MOD([_blake2],
   [test "$with_builtin_blake2" = yes], [],
   [$LIBB2_CFLAGS], [$LIBB2_LIBS])
 PY_STDLIB_MOD([_blake3],
-  [test "$with_builtin_blake3" = yes], [],
-  [], [])
+  [test "$with_builtin_blake3" = yes],
+  [],
+  [
+    Modules/_blake3/blake3module.c
+    Modules/_blake3/impl/blake3.c
+    Modules/_blake3/impl/blake3_dispatch.c
+    Modules/_blake3/impl/blake3_portable.c
+    Modules/_blake3/impl/blake3_sse2.c
+    Modules/_blake3/impl/blake3_sse41.c
+    Modules/_blake3/impl/blake3_avx2.c
+    Modules/_blake3/impl/blake3_avx512.c
+    Modules/_blake3/impl/blake3_neon.c
+  ],
+  [-IModules/_blake3/impl]
+)
 PY_STDLIB_MOD([_ctypes],
   [], [test "$have_libffi" = yes],
   [$NO_STRICT_OVERFLOW_CFLAGS $LIBFFI_CFLAGS], [$LIBFFI_LIBS])
