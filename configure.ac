@@ -7460,13 +7460,13 @@ AC_DEFINE([PY_SSL_DEFAULT_CIPHERS], [1])
 ])
 
 # builtin hash modules
-default_hashlib_hashes="md5,sha1,sha2,sha3,blake2"
+default_hashlib_hashes="md5,sha1,sha256,sha512,sha3,blake2,blake3"
 AC_MSG_CHECKING([for --with-builtin-hashlib-hashes])
 AC_ARG_WITH(
   [builtin-hashlib-hashes],
   [AS_HELP_STRING(
-    [--with-builtin-hashlib-hashes=md5,sha1,sha2,sha3,blake2],
-    [builtin hash modules, md5, sha1, sha2, sha3 (with shake), blake2]
+    [--with-builtin-hashlib-hashes=md5,sha1,sha2,sha3,blake2,blake3],
+    [builtin hash modules, md5, sha1, sha2, sha3 (with shake), blake2, blake3]
   )],
 [
   AS_CASE([$with_builtin_hashlib_hashes],
@@ -7489,6 +7489,7 @@ for builtin_hash in $with_builtin_hashlib_hashes; do
       [sha2], [with_builtin_sha2=yes],
       [sha3], [with_builtin_sha3=yes],
       [blake2], [with_builtin_blake2=yes]
+      [blake3], [with_builtin_blake3=yes]
     )
 done
 IFS=$as_save_IFS
@@ -7835,7 +7836,7 @@ PY_STDLIB_MOD([_sha3], [test "$with_builtin_sha3" = yes])
 PY_STDLIB_MOD([_blake2],
   [test "$with_builtin_blake2" = yes], [],
   [$LIBB2_CFLAGS], [$LIBB2_LIBS])
-
+PY_STDLIB_MOD([_blake3], [test "$with_builtin_blake3" = yes])
 PY_STDLIB_MOD([_ctypes],
   [], [test "$have_libffi" = yes],
   [$NO_STRICT_OVERFLOW_CFLAGS $LIBFFI_CFLAGS], [$LIBFFI_LIBS])
