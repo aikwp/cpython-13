@@ -476,6 +476,11 @@ AC_SUBST([UNIVERSALSDK])
 AC_SUBST([ARCH_RUN_32BIT])
 ARCH_RUN_32BIT=""
 
+AC_ARG_ENABLE([blake3],
+  [AS_HELP_STRING([--enable-blake3], [Build _blake3 module])],
+  [with_builtin_blake3=$enableval],
+  [with_builtin_blake3=yes])
+
 # For backward compatibility reasons we prefer to select '32-bit' if available,
 # otherwise use 'intel'
 UNIVERSAL_ARCHS="32-bit"
