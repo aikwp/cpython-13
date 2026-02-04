@@ -86,15 +86,15 @@
 @MODULE__BLAKE2_TRUE@_blake2 _blake2/blake2module.c _blake2/blake2b_impl.c _blake2/blake2s_impl.c
 # BLAKE3 support
 _blake3 _blake3module.c \
-        _blake3/blake3.c \
-        _blake3/blake3_dispatch.c \
-        _blake3/blake3_portable.c \
-        _blake3/blake3_sse2.c \
-        _blake3/blake3_sse41.c \
-        _blake3/blake3_avx2.c \
-        _blake3/blake3_avx512.c \
-        _blake3/blake3_neon.c \
-        -I$(srcdir)/Modules/_blake3
+    _blake3/impl/blake3.c \
+    _blake3/impl/blake3_dispatch.c \
+    _blake3/impl/blake3_portable.c \
+    _blake3/impl/blake3_sse2.c \
+    _blake3/impl/blake3_sse41.c \
+    _blake3/impl/blake3_avx2.c \
+    _blake3/impl/blake3_avx512.c \
+    _blake3/impl/blake3_neon.c \
+    -I$(srcdir)/Modules/_blake3/impl
 
 
 ############################################################################
