@@ -7065,6 +7065,7 @@ AC_SUBST([SRCDIRS])
 SRCDIRS="\
   Modules \
   Modules/_blake2 \
+  Modules/_blake3 \
   Modules/_ctypes \
   Modules/_decimal \
   Modules/_decimal/libmpdec \
@@ -7836,7 +7837,9 @@ PY_STDLIB_MOD([_sha3], [test "$with_builtin_sha3" = yes])
 PY_STDLIB_MOD([_blake2],
   [test "$with_builtin_blake2" = yes], [],
   [$LIBB2_CFLAGS], [$LIBB2_LIBS])
-PY_STDLIB_MOD([_blake3], [test "$with_builtin_blake3" = yes])
+PY_STDLIB_MOD([_blake3],
+  [test "$with_builtin_blake3" = yes], [],
+  [], [])
 PY_STDLIB_MOD([_ctypes],
   [], [test "$have_libffi" = yes],
   [$NO_STRICT_OVERFLOW_CFLAGS $LIBFFI_CFLAGS], [$LIBFFI_LIBS])

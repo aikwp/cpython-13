@@ -203,22 +203,23 @@ blake3_hexdigest(BLAKE3Object *self, PyObject *args, PyObject *kwlist)
         return NULL;
 
     Py_ssize_t len = PyBytes_GET_SIZE(bytes);
-    PyObject *hex = PyUnicode_FromStringAndSize(NULL, len * 2);
-    if (hex == NULL) {
+    PyObject *hex = PyBytes_FromStringAndSize(NULL, len * 2);
+    if (!hex) {
         Py_DECREF(bytes);
         return NULL;
     }
 
-    char *dst = PyUnicode_AS_UNICODE(hex);
     const unsigned char *src = (const unsigned char *)PyBytes_AS_STRING(bytes);
+    unsigned char *dst = (unsigned char *)PyBytes_AS_STRING(hex);
 
     for (Py_ssize_t i = 0; i < len; i++) {
-        sprintf(dst + i * 2, "%02x", src[i]);
+        sprintf((char *)(dst + i*2), "%02x", src[i]);
     }
 
     Py_DECREF(bytes);
-    return hex;
+    return PyBytes_AsDecodedObject(hex, "ascii", NULL);
 }
+
 
 PyDoc_STRVAR(copy_doc,
 "copy($self, /)\n\
