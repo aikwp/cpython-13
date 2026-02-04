@@ -7071,6 +7071,7 @@ SRCDIRS="\
   Modules \
   Modules/_blake2 \
   Modules/_blake3 \
+  Modules/_blake3/impl \
   Modules/_ctypes \
   Modules/_decimal \
   Modules/_decimal/libmpdec \
