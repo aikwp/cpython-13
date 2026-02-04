@@ -16,160 +16,94 @@
  *     copy() → new BLAKE3 object
  */
 
-#define PY_SSIZE_T_CLEAN
-#include <Python.h>
 
+#define PY_SSIZE_T_CLEAN
+#include "Python.h"
 #include "impl/blake3.h"
 
-/* ----------------------------------------------------------------------------
-   Object definition
-   ---------------------------------------------------------------------------- */
+#define BLAKE3_DEFAULT_DIGEST_SIZE 32
 
 typedef struct {
     PyObject_HEAD
     blake3_hasher hasher;
-} BLAKE3Object;
+    Py_ssize_t digest_size;
+} Blake3Object;
 
-static PyTypeObject BLAKE3_Type;
-
-/* Forward declarations */
-static PyObject *blake3_new(PyTypeObject *, PyObject *, PyObject *);
-static int       blake3_init(BLAKE3Object *, PyObject *, PyObject *);
-static void      blake3_dealloc(BLAKE3Object *);
-static int       blake3_traverse(BLAKE3Object *, visitproc, void *);
-static int       blake3_clear(BLAKE3Object *);
-static PyObject *blake3_update(BLAKE3Object *, PyObject *);
-static PyObject *blake3_digest(BLAKE3Object *, PyObject *, PyObject *);
-static PyObject *blake3_hexdigest(BLAKE3Object *, PyObject *, PyObject *);
-static PyObject *blake3_copy(BLAKE3Object *, PyObject *);
-
-/* ----------------------------------------------------------------------------
-   Construction
-   ---------------------------------------------------------------------------- */
+static PyTypeObject Blake3_Type;
 
 static PyObject *
 blake3_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-    BLAKE3Object *self = (BLAKE3Object *)type->tp_alloc(type, 0);
-    if (self != NULL) {
+    static char *kwlist[] = {"data", "digest_size", "key", NULL};
+    PyObject *data = NULL, *key = NULL;
+    Py_ssize_t digest_size = BLAKE3_DEFAULT_DIGEST_SIZE;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|On$O:blake3", kwlist,
+                                     &data, &digest_size, &key))
+        return NULL;
+
+    if (digest_size < 1 || digest_size > 65536) {
+        PyErr_SetString(PyExc_ValueError, "digest_size must be 1–65536");
+        return NULL;
+    }
+
+    Blake3Object *self = (Blake3Object *)type->tp_alloc(type, 0);
+    if (self == NULL)
+        return NULL;
+
+    self->digest_size = digest_size;
+
+    if (key != NULL && key != Py_None) {
+        Py_buffer kbuf;
+        if (PyObject_GetBuffer(key, &kbuf, PyBUF_SIMPLE) < 0 ||
+            kbuf.len != BLAKE3_KEY_LEN) {
+            PyErr_Format(PyExc_ValueError, "key must be exactly %d bytes", BLAKE3_KEY_LEN);
+            if (kbuf.obj) PyBuffer_Release(&kbuf);
+            Py_DECREF(self);
+            return NULL;
+        }
+        blake3_hasher_init_keyed(&self->hasher, (const uint8_t *)kbuf.buf);
+        PyBuffer_Release(&kbuf);
+    } else {
         blake3_hasher_init(&self->hasher);
     }
+
+    if (data != NULL && data != Py_None) {
+        Py_buffer vbuf;
+        if (PyObject_GetBuffer(data, &vbuf, PyBUF_SIMPLE) == 0) {
+            blake3_hasher_update(&self->hasher, vbuf.buf, (size_t)vbuf.len);
+            PyBuffer_Release(&vbuf);
+        } else {
+            Py_DECREF(self);
+            return NULL;
+        }
+    }
+
     return (PyObject *)self;
 }
 
-static int
-blake3_init(BLAKE3Object *self, PyObject *args, PyObject *kwds)
-{
-    static char *kwlist[] = {"data", "key", "context", "max_threads", NULL};
-
-    Py_buffer data = {0}, key = {0}, context = {0};
-    int max_threads = -1;
-
-    if (!PyArg_ParseTupleAndKeywords(args, kwds, "|y*y*y*i", kwlist,
-                                     &data, &key, &context, &max_threads)) {
-        return -1;
-    }
-
-    /* key and context are mutually exclusive */
-    if (key.obj != NULL && context.obj != NULL) {
-        PyErr_SetString(PyExc_TypeError,
-                        "cannot specify both 'key' and 'context'");
-        goto fail;
-    }
-
-    if (context.obj != NULL) {
-        if (context.len == 0) {
-            PyErr_SetString(PyExc_ValueError, "context must not be empty");
-            goto fail;
-        }
-        blake3_hasher_init_derive_key_raw(&self->hasher,
-                                          context.buf,
-                                          (size_t)context.len);
-    }
-    else if (key.obj != NULL) {
-        if (key.len != BLAKE3_KEY_LEN) {
-            PyErr_SetString(PyExc_ValueError,
-                            "key must be exactly 32 bytes long");
-            goto fail;
-        }
-        blake3_hasher_init_keyed(&self->hasher,
-                                 (const uint8_t *)key.buf);
-    }
-    else {
-        blake3_hasher_init(&self->hasher);
-    }
-
-    if (data.obj != NULL && data.len > 0) {
-        blake3_hasher_update(&self->hasher, data.buf, (size_t)data.len);
-    }
-
-    PyBuffer_Release(&data);
-    PyBuffer_Release(&key);
-    PyBuffer_Release(&context);
-    return 0;
-
-fail:
-    PyBuffer_Release(&data);
-    PyBuffer_Release(&key);
-    PyBuffer_Release(&context);
-    return -1;
-}
-
-/* ----------------------------------------------------------------------------
-   GC support
-   ---------------------------------------------------------------------------- */
-
 static void
-blake3_dealloc(BLAKE3Object *self)
+Blake3_dealloc(Blake3Object *self)
 {
     Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
-static int
-blake3_traverse(BLAKE3Object *self, visitproc visit, void *arg)
-{
-    return 0;
-}
-
-static int
-blake3_clear(BLAKE3Object *self)
-{
-    return 0;
-}
-
-/* ----------------------------------------------------------------------------
-   Methods
-   ---------------------------------------------------------------------------- */
-
-PyDoc_STRVAR(update_doc,
-"update($self, data, /)\n\
---\n\
-Update the hasher with more data.");
-
 static PyObject *
-blake3_update(BLAKE3Object *self, PyObject *arg)
+Blake3_update(Blake3Object *self, PyObject *arg)
 {
-    Py_buffer view = {0};
-
+    Py_buffer view;
     if (!PyArg_Parse(arg, "y*:update", &view))
         return NULL;
-
     blake3_hasher_update(&self->hasher, view.buf, (size_t)view.len);
     PyBuffer_Release(&view);
-
     Py_RETURN_NONE;
 }
 
-PyDoc_STRVAR(digest_doc,
-"digest($self, /, *, length=32)\n\
---\n\
-Return the digest of the data (extendable output mode).");
-
 static PyObject *
-blake3_digest(BLAKE3Object *self, PyObject *args, PyObject *kwds)
+Blake3_digest(Blake3Object *self, PyObject *args, PyObject *kwds)
 {
     static char *kwlist[] = {"length", NULL};
-    Py_ssize_t length = BLAKE3_OUT_LEN;
+    Py_ssize_t length = self->digest_size;
 
     if (!PyArg_ParseTupleAndKeywords(args, kwds, "|n:digest", kwlist, &length))
         return NULL;
@@ -186,150 +120,160 @@ blake3_digest(BLAKE3Object *self, PyObject *args, PyObject *kwds)
     blake3_hasher_finalize_seek(&self->hasher, 0,
                                 (uint8_t *)PyBytes_AS_STRING(result),
                                 (size_t)length);
-
     return result;
 }
 
-PyDoc_STRVAR(hexdigest_doc,
-"hexdigest($self, /, *, length=64)\n\
---\n\
-Return the hex-encoded digest (extendable output mode).");
-
 static PyObject *
-blake3_hexdigest(BLAKE3Object *self, PyObject *args, PyObject *kwlist)
+Blake3_hexdigest(Blake3Object *self, PyObject *args, PyObject *kwds)
 {
-    PyObject *bytes = blake3_digest(self, args, kwlist);
-    if (bytes == NULL)
+    PyObject *digest = Blake3_digest(self, args, kwds);
+    if (digest == NULL)
         return NULL;
 
-    Py_ssize_t len = PyBytes_GET_SIZE(bytes);
-    PyObject *hex = PyBytes_FromStringAndSize(NULL, len * 2);
-    if (!hex) {
-        Py_DECREF(bytes);
-        return NULL;
+    Py_ssize_t len = PyBytes_GET_SIZE(digest);
+    const unsigned char *buf = (const unsigned char *)PyBytes_AS_STRING(digest);
+
+    char *hexbuf = PyMem_Malloc(len * 2 + 1);
+    if (hexbuf == NULL) {
+        Py_DECREF(digest);
+        return PyErr_NoMemory();
     }
-
-    const unsigned char *src = (const unsigned char *)PyBytes_AS_STRING(bytes);
-    unsigned char *dst = (unsigned char *)PyBytes_AS_STRING(hex);
 
     for (Py_ssize_t i = 0; i < len; i++) {
-        sprintf((char *)(dst + i*2), "%02x", src[i]);
+        snprintf(hexbuf + i * 2, 3, "%02x", buf[i]);
     }
+    hexbuf[len * 2] = '\0';
 
-    Py_DECREF(bytes);
-    return PyBytes_AsDecodedObject(hex, "ascii", NULL);
+    PyObject *hex = PyUnicode_FromString(hexbuf);
+    PyMem_Free(hexbuf);
+    Py_DECREF(digest);
+    return hex;
 }
 
-
-PyDoc_STRVAR(copy_doc,
-"copy($self, /)\n\
---\n\
-Return a copy of the current hasher state.");
-
 static PyObject *
-blake3_copy(BLAKE3Object *self, PyObject *Py_UNUSED(ignored))
+Blake3_copy(Blake3Object *self, PyObject *Py_UNUSED(ignored))
 {
-    BLAKE3Object *copy = PyObject_GC_New(BLAKE3Object, Py_TYPE(self));
+    Blake3Object *copy = (Blake3Object *)Blake3_Type.tp_alloc(&Blake3_Type, 0);
     if (copy == NULL)
         return NULL;
 
-    copy->hasher = self->hasher;  /* structure copy is safe */
+    copy->digest_size = self->digest_size;
+    memcpy(&copy->hasher, &self->hasher, sizeof(blake3_hasher));
 
-    PyObject_GC_Track(copy);
     return (PyObject *)copy;
 }
 
-/* ----------------------------------------------------------------------------
-   Method table
-   ---------------------------------------------------------------------------- */
+static PyMethodDef Blake3_methods[] = {
+    {"update",    (PyCFunction)Blake3_update,    METH_O,                NULL},
+    {"digest",    (PyCFunction)Blake3_digest,    METH_VARARGS|METH_KEYWORDS, NULL},
+    {"hexdigest", (PyCFunction)Blake3_hexdigest, METH_VARARGS|METH_KEYWORDS, NULL},
+    {"copy",      (PyCFunction)Blake3_copy,      METH_NOARGS,           NULL},
+    {NULL,        NULL}
+};
 
-static PyMethodDef blake3_methods[] = {
-    {"update",    (PyCFunction)blake3_update,    METH_O,      update_doc},
-    {"digest",    (PyCFunction)blake3_digest,    METH_VARARGS|METH_KEYWORDS, digest_doc},
-    {"hexdigest", (PyCFunction)blake3_hexdigest, METH_VARARGS|METH_KEYWORDS, hexdigest_doc},
-    {"copy",      (PyCFunction)blake3_copy,      METH_NOARGS, copy_doc},
+PyDoc_STRVAR(Blake3_doc,
+"BLAKE3 hash object");
+
+static PyTypeObject Blake3_Type = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    .tp_name      = "_blake3.BLAKE3",
+    .tp_doc       = Blake3_doc,
+    .tp_basicsize = sizeof(Blake3Object),
+    .tp_flags     = Py_TPFLAGS_DEFAULT,
+    .tp_dealloc   = (destructor)Blake3_dealloc,
+    .tp_methods   = Blake3_methods,
+    .tp_new       = blake3_new,
+};
+
+static PyObject *
+blake3_derive_key(PyObject *module, PyObject *args, PyObject *kwds)
+{
+    static char *kwlist[] = {"key_material", "context", "length", NULL};
+    Py_buffer key_mat = {0}, ctx = {0};
+    Py_ssize_t length = BLAKE3_DEFAULT_DIGEST_SIZE;
+
+    if (!PyArg_ParseTupleAndKeywords(args, kwds, "y*y*|n:derive_key", kwlist,
+                                     &key_mat, &ctx, &length))
+        return NULL;
+
+    if (length < 1 || length > 65536) {
+        PyErr_SetString(PyExc_ValueError, "length must be 1–65536");
+        goto cleanup;
+    }
+
+    if (ctx.len == 0 || ctx.buf == NULL) {
+        PyErr_SetString(PyExc_ValueError, "context must be non-empty bytes");
+        goto cleanup;
+    }
+
+    PyObject *result = NULL;
+
+    result = PyBytes_FromStringAndSize(NULL, length);
+    if (result == NULL)
+        goto cleanup;
+
+    char *ctx_str = PyMem_Malloc(ctx.len + 1);
+    if (ctx_str == NULL) {
+        PyErr_NoMemory();
+        Py_DECREF(result);
+        result = NULL;
+        goto cleanup;
+    }
+    memcpy(ctx_str, ctx.buf, ctx.len);
+    ctx_str[ctx.len] = '\0';
+
+    blake3_hasher hasher;
+    blake3_hasher_init_derive_key(&hasher, ctx_str);
+    PyMem_Free(ctx_str);
+
+    blake3_hasher_update(&hasher,
+                         (const uint8_t *)key_mat.buf,
+                         (size_t)key_mat.len);
+
+    blake3_hasher_finalize_seek(&hasher, 0,
+                                (uint8_t *)PyBytes_AS_STRING(result),
+                                (size_t)length);
+
+cleanup:
+    if (key_mat.obj) PyBuffer_Release(&key_mat);
+    if (ctx.obj)    PyBuffer_Release(&ctx);
+    return result;
+}
+
+static PyMethodDef _blake3_methods[] = {
+    {"blake3",     (PyCFunction)blake3_new, METH_VARARGS|METH_KEYWORDS,
+     "blake3(data=b'', *, digest_size=32, key=None) -> BLAKE3 object"},
+    {"derive_key", (PyCFunction)blake3_derive_key, METH_VARARGS|METH_KEYWORDS,
+     "derive_key(key_material, context, length=32) -> derived key bytes"},
     {NULL}
 };
 
-/* ----------------------------------------------------------------------------
-   Type definition
-   ---------------------------------------------------------------------------- */
-
-static PyType_Spec BLAKE3_spec = {
-    .name      = "_blake3.BLAKE3",
-    .basicsize = sizeof(BLAKE3Object),
-    .flags     = Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE | Py_TPFLAGS_HAVE_GC,
-    .slots     = (PyType_Slot[]) {
-        {Py_tp_new,      blake3_new},
-        {Py_tp_init,     blake3_init},
-        {Py_tp_dealloc,  blake3_dealloc},
-        {Py_tp_traverse, blake3_traverse},
-        {Py_tp_clear,    blake3_clear},
-        {Py_tp_methods,  blake3_methods},
-        {Py_tp_doc,      "BLAKE3 hash object"},
-        {0, NULL}
-    }
-};
-
-/* ----------------------------------------------------------------------------
-   Module definition
-   ---------------------------------------------------------------------------- */
-
-PyDoc_STRVAR(module_doc,
-"_blake3 — BLAKE3 hash function (CPython native implementation)\n"
-);
-
-static struct PyModuleDef _blake3_module = {
+static struct PyModuleDef _blake3module = {
     PyModuleDef_HEAD_INIT,
-    ._m_name   = "_blake3",
-    .m_doc     = module_doc,
-    .m_size    = 0,
-    .m_slots   = (PyModuleDef_Slot[]) {
-        {Py_mod_gil, Py_MOD_GIL_NOT_USED},  /* 3.13+ free-threaded compatibility */
-        {0, NULL}
-    }
+    .m_name   = "_blake3",
+    .m_doc    = "BLAKE3 hash function (vendored C reference implementation)",
+    .m_size   = -1,
+    .m_methods = _blake3_methods,
 };
 
 PyMODINIT_FUNC
 PyInit__blake3(void)
 {
-    PyObject *m = PyModuleDef_Init(&_blake3_module);
+    PyObject *m;
+
+    if (PyType_Ready(&Blake3_Type) < 0)
+        return NULL;
+
+    m = PyModule_Create(&_blake3module);
     if (m == NULL)
         return NULL;
 
-    PyTypeObject *type = (PyTypeObject *)PyType_FromModuleAndSpec(
-        m, &BLAKE3_spec, NULL);
-    if (type == NULL)
-        goto error;
-
-    if (PyModule_AddType(m, type) < 0) {
-        Py_DECREF(type);
-        goto error;
+    Py_INCREF(&Blake3_Type);
+    if (PyModule_AddObject(m, "BLAKE3", (PyObject *)&Blake3_Type) < 0) {
+        Py_DECREF(&Blake3_Type);
+        Py_DECREF(m);
+        return NULL;
     }
-
-#define ADD_CONSTANT(name, value) \
-    if (PyModule_AddIntConstant(m, name, value) < 0) goto error
-
-    ADD_CONSTANT("KEY_LENGTH",    BLAKE3_KEY_LEN);
-    ADD_CONSTANT("DIGEST_LENGTH", BLAKE3_OUT_LEN);
-    ADD_CONSTANT("BLOCK_LENGTH",  BLAKE3_BLOCK_LEN);
-    ADD_CONSTANT("CHUNK_LENGTH",  BLAKE3_CHUNK_LEN);
-    ADD_CONSTANT("MAX_DEPTH",     BLAKE3_MAX_DEPTH);
-    ADD_CONSTANT("AUTO",          -1);
-
-#undef ADD_CONSTANT
-
-    PyObject *mt = PyBool_FromLong(0);
-    if (PyModule_AddObjectRef(m, "supports_multithreading", mt) < 0) {
-        Py_DECREF(mt);
-        goto error;
-    }
-    Py_DECREF(mt);
 
     return m;
-
-error:
-    Py_XDECREF(type);
-    Py_XDECREF(m);
-    return NULL;
 }
