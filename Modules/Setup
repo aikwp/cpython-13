@@ -166,7 +166,7 @@ PYTHONPATH=$(COREPYTHONPATH)
 
 # hashing builtins
 #_blake2 _blake2/blake2module.c _blake2/blake2b_impl.c _blake2/blake2s_impl.c
-#_blake3 _blake3module.c _blake3/impl/blake3.c _blake3/impl/blake3_dispatch.c _blake3/impl/blake3_portable.c _blake3/impl/blake3_sse2.c _blake3/impl/blake3_sse41.c _blake3/impl/blake3_avx2.c _blake3/impl/blake3_avx512.c _blake3/impl/blake3_neon.c -I$(srcdir)/Modules/_blake3/impl
+#_blake3 _blake3/blake3module.c _blake3/impl/blake3.c _blake3/impl/blake3_dispatch.c _blake3/impl/blake3_portable.c _blake3/impl/blake3_sse2.c _blake3/impl/blake3_sse41.c _blake3/impl/blake3_avx2.c _blake3/impl/blake3_avx512.c _blake3/impl/blake3_neon.c -I$(srcdir)/Modules/_blake3/impl
 #_md5 md5module.c -I$(srcdir)/Modules/_hacl/include _hacl/Hacl_Hash_MD5.c -D_BSD_SOURCE -D_DEFAULT_SOURCE
 #_sha1 sha1module.c -I$(srcdir)/Modules/_hacl/include _hacl/Hacl_Hash_SHA1.c -D_BSD_SOURCE -D_DEFAULT_SOURCE
 #_sha2 sha2module.c -I$(srcdir)/Modules/_hacl/include Modules/_hacl/libHacl_Hash_SHA2.a
