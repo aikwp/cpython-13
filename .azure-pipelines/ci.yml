@@ -1,4 +1,4 @@
-trigger: ['main', '3.*']
+trigger: ['main', '3.*', 'dev']
 
 jobs:
 - job: Prebuild
