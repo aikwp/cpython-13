@@ -7852,10 +7852,6 @@ PY_STDLIB_MOD([_blake3],
     Modules/_blake3/impl/blake3_dispatch.c
     Modules/_blake3/impl/blake3_portable.c
     Modules/_blake3/impl/blake3_sse2.c
-    Modules/_blake3/impl/blake3_sse41.c
-    Modules/_blake3/impl/blake3_avx2.c
-    Modules/_blake3/impl/blake3_avx512.c
-    Modules/_blake3/impl/blake3_neon.c
   ],
   [-IModules/_blake3/impl]
 )
