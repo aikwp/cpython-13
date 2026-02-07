@@ -505,6 +505,12 @@ jobs:
         echo "OPENSSL_DIR=${GITHUB_WORKSPACE}/multissl/openssl/${OPENSSL_VER}" >> "$GITHUB_ENV"
         echo "LD_PRELOAD=${OPENSSL_DIR}/lib/libcrypto.so:${OPENSSL_DIR}/lib/libssl.so" >> $GITHUB_ENV
         echo "LD_LIBRARY_PATH=${GITHUB_WORKSPACE}/multissl/openssl/${OPENSSL_VER}/lib" >> "$GITHUB_ENV"
+    - name: Reconfigure OpenSSL for ASAN
+      run: |
+        cd "$OPENSSL_DIR"
+        ./config no-asm
+        make -j4
+        make install_sw
     - name: 'Restore OpenSSL build'
       id: cache-openssl
       uses: actions/cache@v5
