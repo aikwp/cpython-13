@@ -229,7 +229,6 @@ def configure_host_python(context):
 
         # Android always uses a shared libpython.
         "--enable-shared",
-        "--enable-optimizations",
         "--without-static-libpython",
 
         # Dependent libraries. The others are found using pkg-config: see
