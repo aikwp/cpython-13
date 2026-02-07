@@ -205,7 +205,7 @@ AC_SUBST([FREEZE_MODULE_DEPS])
 AC_SUBST([PYTHON_FOR_BUILD_DEPS])
 
 AC_CHECK_PROGS([PYTHON_FOR_REGEN],
-  [python$PACKAGE_VERSION python3.13 python3.12 python3.11 python3.10 python3 python],
+  [python$PACKAGE_VERSION python3.15 python 3.14 python3.13 python3.12 python3.11 python3.10 python3 python],
   [python3])
 AC_SUBST([PYTHON_FOR_REGEN])
 
@@ -475,11 +475,6 @@ AC_SUBST([UNIVERSALSDK])
 
 AC_SUBST([ARCH_RUN_32BIT])
 ARCH_RUN_32BIT=""
-
-AC_ARG_ENABLE([blake3],
-  [AS_HELP_STRING([--enable-blake3], [Build _blake3 module])],
-  [with_builtin_blake3=$enableval],
-  [with_builtin_blake3=yes])
 
 # For backward compatibility reasons we prefer to select '32-bit' if available,
 # otherwise use 'intel'
@@ -6045,8 +6040,8 @@ AS_VAR_IF([ac_cv_gcc_asm_for_x87], [yes], [
 AC_CACHE_CHECK([whether we can use gcc inline assembler to get and set mc68881 fpcr], [ac_cv_gcc_asm_for_mc68881], [
 AC_LINK_IFELSE(   [AC_LANG_PROGRAM([[]], [[
   unsigned int fpcr;
-  __asm__ __volatile__ ("fmove.l %%fpcr,%0" : "=g" (fpcr));
-  __asm__ __volatile__ ("fmove.l %0,%%fpcr" : : "g" (fpcr));
+  __asm__ __volatile__ ("fmove.l %%fpcr,%0" : "=dm" (fpcr));
+  __asm__ __volatile__ ("fmove.l %0,%%fpcr" : : "dm" (fpcr));
 ]])],[ac_cv_gcc_asm_for_mc68881=yes],[ac_cv_gcc_asm_for_mc68881=no])
 ])
 AS_VAR_IF([ac_cv_gcc_asm_for_mc68881], [yes], [
@@ -7070,8 +7065,6 @@ AC_SUBST([SRCDIRS])
 SRCDIRS="\
   Modules \
   Modules/_blake2 \
-  Modules/_blake3 \
-  Modules/_blake3/impl \
   Modules/_ctypes \
   Modules/_decimal \
   Modules/_decimal/libmpdec \
@@ -7467,13 +7460,13 @@ AC_DEFINE([PY_SSL_DEFAULT_CIPHERS], [1])
 ])
 
 # builtin hash modules
-default_hashlib_hashes="md5,sha1,sha256,sha512,sha3,blake2,blake3"
+default_hashlib_hashes="md5,sha1,sha2,sha3,blake2"
 AC_MSG_CHECKING([for --with-builtin-hashlib-hashes])
 AC_ARG_WITH(
   [builtin-hashlib-hashes],
   [AS_HELP_STRING(
-    [--with-builtin-hashlib-hashes=md5,sha1,sha2,sha3,blake2,blake3],
-    [builtin hash modules, md5, sha1, sha2, sha3 (with shake), blake2, blake3]
+    [--with-builtin-hashlib-hashes=md5,sha1,sha2,sha3,blake2],
+    [builtin hash modules, md5, sha1, sha2, sha3 (with shake), blake2]
   )],
 [
   AS_CASE([$with_builtin_hashlib_hashes],
@@ -7496,7 +7489,6 @@ for builtin_hash in $with_builtin_hashlib_hashes; do
       [sha2], [with_builtin_sha2=yes],
       [sha3], [with_builtin_sha3=yes],
       [blake2], [with_builtin_blake2=yes]
-      [blake3], [with_builtin_blake3=yes]
     )
 done
 IFS=$as_save_IFS
@@ -7843,18 +7835,7 @@ PY_STDLIB_MOD([_sha3], [test "$with_builtin_sha3" = yes])
 PY_STDLIB_MOD([_blake2],
   [test "$with_builtin_blake2" = yes], [],
   [$LIBB2_CFLAGS], [$LIBB2_LIBS])
-PY_STDLIB_MOD([_blake3],
-  [test "$with_builtin_blake3" = yes],
-  [],
-  [
-    Modules/_blake3/blake3module.c
-    Modules/_blake3/impl/blake3.c
-    Modules/_blake3/impl/blake3_dispatch.c
-    Modules/_blake3/impl/blake3_portable.c
-    Modules/_blake3/impl/blake3_sse2.c
-  ],
-  [-IModules/_blake3/impl]
-)
+
 PY_STDLIB_MOD([_ctypes],
   [], [test "$have_libffi" = yes],
   [$NO_STRICT_OVERFLOW_CFLAGS $LIBFFI_CFLAGS], [$LIBFFI_LIBS])

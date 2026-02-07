@@ -187,6 +187,9 @@ jobs:
       - name: Check for unsupported C global variables
         if: github.event_name == 'pull_request'  # $GITHUB_EVENT_NAME
         run: make check-c-globals
+      - name: Check for undocumented C APIs
+        run: make check-c-api-docs
+
 
   build-windows:
     name: >-
@@ -241,7 +244,7 @@ jobs:
       macOS
       ${{ fromJSON(matrix.free-threading) && '(free-threading)' || '' }}
     needs: build-context
-    if: needs.build-context.outputs.run-tests == 'true'
+    if: needs.build-context.outputs.run-macos == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -266,7 +269,7 @@ jobs:
       Ubuntu
       ${{ fromJSON(matrix.free-threading) && '(free-threading)' || '' }}
     needs: build-context
-    if: needs.build-context.outputs.run-tests == 'true'
+    if: needs.build-context.outputs.run-ubuntu == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -282,7 +285,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     needs: build-context
-    if: needs.build-context.outputs.run-tests == 'true'
+    if: needs.build-context.outputs.run-ubuntu == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -335,7 +338,7 @@ jobs:
   build-android:
     name: Android (${{ matrix.arch }})
     needs: build-context
-    if: needs.build-context.outputs.run-tests == 'true'
+    if: needs.build-context.outputs.run-android == 'true'
     timeout-minutes: 60
     strategy:
       fail-fast: false
@@ -357,7 +360,7 @@ jobs:
   build-wasi:
     name: 'WASI'
     needs: build-context
-    if: needs.build-context.outputs.run-tests == 'true'
+    if: needs.build-context.outputs.run-wasi == 'true'
     uses: ./.github/workflows/reusable-wasi.yml
 
   test-hypothesis:
@@ -365,7 +368,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: build-context
-    if: needs.build-context.outputs.run-tests == 'true'
+    if: needs.build-context.outputs.run-ubuntu == 'true'
     env:
       OPENSSL_VER: 3.0.18
       PYTHONSTRICTEXTENSIONBUILD: 1
@@ -471,7 +474,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     needs: build-context
-    if: needs.build-context.outputs.run-tests == 'true'
+    if: needs.build-context.outputs.run-ubuntu == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -524,7 +527,7 @@ jobs:
     # ${{ '' } is a hack to nest jobs under the same sidebar category.
     name: Sanitizers${{ '' }}  # zizmor: ignore[obfuscation]
     needs: build-context
-    if: needs.build-context.outputs.run-tests == 'true'
+    if: needs.build-context.outputs.run-ubuntu == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -540,45 +543,48 @@ jobs:
       sanitizer: ${{ matrix.sanitizer }}
       free-threading: ${{ matrix.free-threading }}
 
-  # CIFuzz job based on https://google.github.io/oss-fuzz/getting-started/continuous-integration/
   cifuzz:
-    name: CIFuzz
-    runs-on: ubuntu-latest
-    timeout-minutes: 60
+    # ${{ '' } is a hack to nest jobs under the same sidebar category.
+    name: CIFuzz${{ '' }}  # zizmor: ignore[obfuscation]
     needs: build-context
-    if: needs.build-context.outputs.run-ci-fuzz == 'true'
+    if: >-
+      needs.build-context.outputs.run-ci-fuzz == 'true'
+      || needs.build-context.outputs.run-ci-fuzz-stdlib == 'true'
     permissions:
       security-events: write
     strategy:
       fail-fast: false
       matrix:
-        sanitizer: [address, undefined, memory]
-    steps:
-      - name: Build fuzzers (${{ matrix.sanitizer }})
-        id: build
-        uses: google/oss-fuzz/infra/cifuzz/actions/build_fuzzers@master
-        with:
-          oss-fuzz-project-name: cpython3
-          sanitizer: ${{ matrix.sanitizer }}
-      - name: Run fuzzers (${{ matrix.sanitizer }})
-        uses: google/oss-fuzz/infra/cifuzz/actions/run_fuzzers@master
-        with:
-          fuzz-seconds: 600
-          oss-fuzz-project-name: cpython3
-          output-sarif: true
-          sanitizer: ${{ matrix.sanitizer }}
-      - name: Upload crash
-        if: failure() && steps.build.outcome == 'success'
-        uses: actions/upload-artifact@v6
-        with:
-          name: ${{ matrix.sanitizer }}-artifacts
-          path: ./out/artifacts
-      - name: Upload SARIF
-        if: always() && steps.build.outcome == 'success'
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: cifuzz-sarif/results.sarif
-          checkout_path: cifuzz-sarif
+        sanitizer:
+          - address
+        oss-fuzz-project-name:
+          - cpython3
+          - python3-libraries
+        include:
+          - sanitizer: undefined
+            oss-fuzz-project-name: cpython3
+          - sanitizer: memory
+            oss-fuzz-project-name: cpython3
+        exclude:
+          # Note that the 'no-exclude' sentinel below is to prevent
+          # an empty string value from excluding all jobs and causing
+          # GHA to create a 'default' matrix entry with all empty values.
+          - oss-fuzz-project-name: >-
+              ${{
+                needs.build-context.outputs.run-ci-fuzz == 'true'
+                && 'no-exclude'
+                || 'cpython3'
+              }}
+          - oss-fuzz-project-name: >-
+              ${{
+                needs.build-context.outputs.run-ci-fuzz-stdlib == 'true'
+                && 'no-exclude'
+                || 'python3-libraries'
+              }}
+    uses: ./.github/workflows/reusable-cifuzz.yml
+    with:
+      oss-fuzz-project-name: ${{ matrix.oss-fuzz-project-name }}
+      sanitizer: ${{ matrix.sanitizer }}
 
   all-required-green:  # This job does nothing and is only used for the branch protection
     name: All required checks pass
@@ -594,7 +600,6 @@ jobs:
     - build-macos
     - build-ubuntu
     - build-ubuntu-ssltests
-    - build-android
     - build-wasi
     - test-hypothesis
     - build-asan
@@ -607,46 +612,40 @@ jobs:
       uses: re-actors/alls-green@05ac9388f0aebcb5727afa17fcccfecd6f8ec5fe
       with:
         allowed-failures: >-
+          build-android,
           build-windows-msi,
           build-ubuntu-ssltests,
           test-hypothesis,
           cifuzz,
         allowed-skips: >-
-          ${{
-            !fromJSON(needs.build-context.outputs.run-docs)
-            && '
-            check-docs,
-            '
-            || ''
-          }}
+          ${{ !fromJSON(needs.build-context.outputs.run-docs) && 'check-docs,' || '' }}
           ${{
             needs.build-context.outputs.run-tests != 'true'
             && '
             check-autoconf-regen,
             check-generated-files,
-            build-macos,
+            '
+            || ''
+          }}
+          ${{ !fromJSON(needs.build-context.outputs.run-windows-tests) && 'build-windows,' || '' }}
+          ${{
+            !fromJSON(needs.build-context.outputs.run-ci-fuzz)
+            && !fromJSON(needs.build-context.outputs.run-ci-fuzz-stdlib)
+            && 'cifuzz,' ||
+            ''
+          }}
+          ${{ !fromJSON(needs.build-context.outputs.run-macos) && 'build-macos,' || '' }}
+          ${{
+            !fromJSON(needs.build-context.outputs.run-ubuntu)
+            && '
             build-ubuntu,
             build-ubuntu-ssltests,
-            build-android,
-            build-wasi,
             test-hypothesis,
             build-asan,
             build-san,
             '
             || ''
           }}
-          ${{
-            !fromJSON(needs.build-context.outputs.run-windows-tests)
-            && '
-            build-windows,
-            '
-            || ''
-          }}
-          ${{
-            !fromJSON(needs.build-context.outputs.run-ci-fuzz)
-            && '
-            cifuzz,
-            '
-            || ''
-          }}
+          ${{ !fromJSON(needs.build-context.outputs.run-android) && 'build-android,' || '' }}
+          ${{ !fromJSON(needs.build-context.outputs.run-wasi) && 'build-wasi,' || '' }}
         jobs: ${{ toJSON(needs) }}
