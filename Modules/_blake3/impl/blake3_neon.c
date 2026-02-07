@@ -55,7 +55,7 @@ INLINE uint32x4_t rot8_128(uint32x4_t x) {
 #elif __GNUC__ * 10000 + __GNUC_MINOR__ * 100 >=40700
   static const uint8x16_t r8 = {1,2,3,0,5,6,7,4,9,10,11,8,13,14,15,12};
   return vreinterpretq_u32_u8(__builtin_shuffle(vreinterpretq_u8_u32(x), vreinterpretq_u8_u32(x), r8));
-#else 
+#else
   return vsriq_n_u32(vshlq_n_u32(x, 32-8), x, 8);
 #endif
 }
@@ -246,7 +246,7 @@ INLINE void load_counters4(uint64_t counter, bool increment_counter,
 static void blake3_hash4_neon(const uint8_t *const *inputs, size_t blocks,
                               const uint32_t key[8], uint64_t counter,
                               bool increment_counter, uint8_t flags,
-                              uint8_t flags_start, uint8_t flags_end, 
+                              uint8_t flags_start, uint8_t flags_end,
                               uint8_t *out) {
   uint32x4_t h_vecs[8] = {
       set1_128(key[0]), set1_128(key[1]), set1_128(key[2]), set1_128(key[3]),
