@@ -16,6 +16,7 @@
 *.orig
 *.o
 *.o*
+*.patch
 *.pyc
 *.pyd
 *.pyo
